@@ -1,0 +1,27 @@
+---
+
+- hosts: localhost
+  gather_facts: False
+  tasks:
+    - include_role:
+        name: ssh
+        tasks_from: localhost
+
+- hosts: all
+  gather_facts: False
+
+  vars_prompt:
+    - name: ssh_userid
+      prompt: k8s cluster's management id
+      private: no
+      default: "{{ lookup('env', 'USER') }}"
+
+    - name: ansible_ssh_pass
+      prompt: k8s cluster's management password
+      private: yes
+
+  tasks:
+    - include_role:
+        name: ssh
+        tasks_from: cluster_hosts
+

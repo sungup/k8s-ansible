@@ -1,0 +1,17 @@
+- name: Checking id_rsa exists
+  stat:
+    path: "{{ id_rsa_path }}"
+  register: id_rsa_exists
+
+- name: Creating id_rsa key
+  user:
+    name: "{{ ansible_user_id }}"
+    generate_ssh_key: yes
+    ssh_key_type: rsa
+    ssh_key_bits: 4096
+    ssh_key_file: "{{ id_rsa_path }}"
+    ssh_key_passphrase: ""
+    force: no
+  when:
+    - id_rsa_exists.stat.exists == False
+

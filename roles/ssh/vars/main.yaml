@@ -1,0 +1,5 @@
+ssh_conf_path: "{{ lookup('env', 'HOME') }}/.ssh"
+id_rsa_path: "{{ ssh_conf_path }}/id_rsa"
+id_rsa_pub_path: "{{ ssh_conf_path }}/id_rsa.pub"
+known_hosts_path: "{{ ssh_conf_path }}/known_hosts"
+ssh_userid: "{{ lookup('env', 'USER') }}"
