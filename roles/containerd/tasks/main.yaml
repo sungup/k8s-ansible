@@ -1,0 +1,39 @@
+---
+
+# Download and install containerd
+
+- name: Download containerd binary
+  get_url:
+    url: "{{ containerd_url }}"
+    dest: "/tmp/{{ containerd_file }}"
+
+- name: Extract containerd binary
+  unarchive:
+    src: "/tmp/{{ containerd_file }}"
+    dest: "/usr/local"
+  become: true
+
+- name: Create local systemd directory
+  file:
+    path: /usr/local/lib/systemd/system
+    state: directory
+  become: true
+
+- name: Install containerd.service
+  template:
+    src: templates/containerd.service.j2
+    dest: /usr/local/lib/systemd/system/containerd.service
+  become: true
+
+- name: Reload containerd.service
+  service:
+    name: containerd
+    state: reloaded
+  become: true
+
+- name: Enable containerd.service
+  service:
+    name: containerd
+    state: started
+    enabled: True
+  become: true
