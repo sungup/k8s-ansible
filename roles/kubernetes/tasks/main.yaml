@@ -50,3 +50,45 @@
     reload: yes
     sysctl_file: /etc/sysctl.d/k8s.conf
   become: true
+
+#
+# Install kubeadm
+#
+- name: Update apt packages
+  apt:
+    update_cache: True
+    force_apt_get: True
+    cache_valid_time: 3600
+  become: true
+
+- name: Install dependency files
+  apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+    state: present
+  become: true
+
+- name: Install Google GPG key for kubernetes
+  get_url:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    dest: /usr/share/keyrings/kubernetes-archive-keyring.gpg
+  become: true
+
+- name: Add kubernetes repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main"
+    state: present
+    filename: kubernetes
+    update_cache: true
+  become: true
+
+- name: Install kubeadm kubelet kubectl
+  apt:
+    pkg:
+      - "kubeadm={{ kubernetes_ver }}-00"
+      - "kubelet={{ kubernetes_ver }}-00"
+      - "kubectl={{ kubernetes_ver }}-00"
+    state: present
+  become: true
