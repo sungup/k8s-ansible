@@ -45,7 +45,7 @@
 
 - name: Generate /etc/containerd/config.toml
   copy:
-    content: "{{ containerd_conf.stdout | replace('SystemdCgroup = false', 'SystemdCgroup = true') }}"
+    content: "{{ containerd_conf.stdout | replace('SystemdCgroup = false', 'SystemdCgroup = true') | replace('registry.k8s.io/pause:3.6', 'registry.k8s.io/pause:3.2') }}"
     dest: /etc/containerd/config.toml
   become: true
 
