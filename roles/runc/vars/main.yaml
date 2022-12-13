@@ -1,0 +1,5 @@
+runc_ver: "1.1.4"
+runc_arch: "arm64"
+runc_repo: "https://github.com/opencontainers/runc/releases/download"
+runc_file: "runc.{{ runc_arch }}"
+runc_url: "{{ runc_repo }}/v{{ runc_ver }}/{{ runc_file }}"

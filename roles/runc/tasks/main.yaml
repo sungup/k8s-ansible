@@ -1,0 +1,13 @@
+---
+
+# Download and install containerd
+
+- name: Download runc binary
+  get_url:
+    url: "{{ runc_url }}"
+    dest: "/tmp/{{ runc_file }}"
+
+- name: Install runc
+  command: "/usr/bin/install -m 755 /tmp/{{ runc_file }} /usr/local/sbin/runc"
+  become: true
+
