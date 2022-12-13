@@ -1,0 +1,20 @@
+---
+
+# Download and install cni
+
+- name: Download cni plugins
+  get_url:
+    url: "{{ cni_url }}"
+    dest: "/tmp/{{ cni_file }}"
+
+- name: Create cni plugin directory /opt/cni/bin
+  file:
+    path: /opt/cni/bin
+    state: directory
+  become: true
+
+- name: Extract cni plugins
+  unarchive:
+    src: "/tmp/{{ cni_file }}"
+    dest: "/opt/cni/bin"
+  become: true
