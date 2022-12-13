@@ -45,22 +45,14 @@
 
 - name: Generate /etc/containerd/config.toml
   copy:
-    content: "{{ containerd_conf.stdout }}"
+    content: "{{ containerd_conf.stdout | replace('SystemdCgroup = false', 'SystemdCgroup = true') }}"
     dest: /etc/containerd/config.toml
-  become: true
-
-- name: Enable systemd cgroup driver
-  lineinfile:
-    dest: /etc/containerd/config.toml
-    regexp: '^(.*)SystemdCgroup = (.*)$'
-    line: '\1SystemdCgroup = true'
-    backrefs: true
-    state: present
   become: true
 
 - name: Enable containerd.service
   service:
     name: containerd
-    state: started
+    state: restarted
     enabled: true
   become: true
+  changed_when: false

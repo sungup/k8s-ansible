@@ -7,7 +7,17 @@
     url: "{{ runc_url }}"
     dest: "/tmp/{{ runc_file }}"
 
+- name: Check runc binary changed
+  copy:
+    src: "/tmp/{{ runc_file }}"
+    dest: /usr/local/sbin/runc
+  check_mode: yes
+  diff: yes
+  register: check_runc_file
+
 - name: Install runc
   command: "/usr/bin/install -m 755 /tmp/{{ runc_file }} /usr/local/sbin/runc"
   become: true
+  when:
+    - check_runc_file is changed
 

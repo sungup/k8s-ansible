@@ -17,6 +17,14 @@
     autoremove: True
     purge: True
 
+- name: Disable SWAP by command
+  shell: swapoff -a
+
+- name: Disable SWAP in fstap
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
 
 - name: Reboot systems
   command: "shutdown --reboot +1"
