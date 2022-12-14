@@ -1,0 +1,6 @@
+- name: Join worker to masters
+  command: kubeadm join {{ apiserver_advertise_address }}:6443 --token {{ join_token }} --discovery-token-ca-cert-hash sha256:{{ join_hash }}
+  become: true
+  when:
+    - join_token is defined
+    - join_hash is defined

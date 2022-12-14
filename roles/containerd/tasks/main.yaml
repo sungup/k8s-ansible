@@ -20,8 +20,8 @@
   become: true
 
 - name: Install containerd.service
-  template:
-    src: templates/containerd.service.j2
+  copy:
+    src: files/containerd.service
     dest: /usr/local/lib/systemd/system/containerd.service
   become: true
 

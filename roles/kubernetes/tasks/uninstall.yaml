@@ -1,0 +1,107 @@
+- name: Remove all worker nodes from cluster
+  command: "kubectl delete node {{ item }}"
+  loop: "{{ groups['workers'] }}"
+  ignore_errors: true
+  run_once: true
+  when: "'masters' in group_names"
+
+- name: kubeadm reset all nodes
+  command: kubeadm reset -f
+  changed_when: false
+  become: true
+  ignore_errors: true
+
+- name: remove kubernetes related files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /var/lib/etcd
+    - /var/lib/kubelet
+    - /var/lib/calico
+    - /var/lib/cni
+    - /etc/kubernetes
+    - /etc/cni/net.d
+  become: true
+
+- name: remove .kube
+  file:
+    path: .kube
+    state: absent
+
+- name: kubelet service stop
+  service:
+    name: kubelet
+    state: stopped
+    enabled: no
+  ignore_errors: true
+  changed_when: false
+  become: true
+
+- name: Remove kubernetes packages
+  apt:
+    pkg:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: absent
+    purge: true
+  become: true
+
+#
+# Remove containers from contaienrd
+#
+- name: Get all registered containers in the k8s.io namespace
+  shell: "ctr -n k8s.io containers ls -q"
+  register: containers
+  become: true
+
+- name: Remove containers
+  command: "ctr -n k8s.io containers rm {{ item }}"
+  with_items: "{{ containers.stdout_lines }}"
+  become: true
+
+- name: Get all images in the k8s.io namespace
+  shell: "ctr -n k8s.io images ls -q"
+  register: images
+  become: true
+
+- name: Remove images
+  shell: "ctr -n k8s.io images rm {{ item }}"
+  with_items: "{{ images.stdout_lines }}"
+  become: true
+
+- name: Get all snapshots in the k8s.io namespace
+  shell: "ctr -n k8s.io snapshots ls | awk '! /KEY/ { print $1 }'"
+  register: snapshots
+  become: true
+
+- name: Remove all snapshots
+  shell: "ctr -n k8s.io snapshots rm {{ item }}"
+  with_items: "{{ snapshots.stdout_lines }}"
+  become: true
+
+- name: Remove containerd namespace
+  shell: "ctr namespace rm k8s.io"
+  become: true
+
+#
+# Remove install dependencies 
+#
+- name: Remove kubernetes repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main"
+    state: absent
+    filename: kubernetes
+  become: true
+
+- name: Remove kubernetes dependencies setting files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /usr/share/keyrings/kubernetes-archive-keyring.gpg
+    - /etc/sysctl.d/k8s.conf
+    - /etc/modules-load.d/k8s.conf
+  become: true
+

@@ -2,3 +2,25 @@
   gather_facts: False
   roles:
     - kubernetes
+
+- hosts: masters
+  gather_facts: false
+  tasks:
+    - include_role:
+        name: kubernetes
+        tasks_from: init_masters
+
+- hosts: masters
+  gather_facts: false
+  tasks:
+    - include_role:
+        name: kubernetes
+        tasks_from: create_token
+
+- hosts: workers
+  gather_facts: false
+  tasks:
+    - include_role:
+        name: kubernetes
+        tasks_from: join_workers
+

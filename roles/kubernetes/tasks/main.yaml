@@ -4,51 +4,34 @@
 # modprobe before kubernetes install
 #
 - name: Copy kubernetes related module config
-  template:
-    src: templates/k8s.conf.j2
+  copy:
+    src: files/k8s.conf
     dest: "/etc/modules-load.d/k8s.conf"
   become: true
 
-- name: Load overlay module
+- name: Load kubernetes related modules
   modprobe:
-    name: overlay
+    name: "{{ item }}"
     state: present
-  become: true
-
-- name: Load br_netfilter module
-  modprobe:
-    name: br_netfilter
-    state: present
+  loop:
+    - overlay
+    - br_netfilter
   become: true
 
 #
 # Update sysctl configuration
 #
-- name: Update net.bridge.bridge-nf-call-iptables
+- name: Update sysctl configurations
   sysctl:
-    name: net.bridge.bridge-nf-call-iptables
+    name: "{{ item }}"
     value: '1'
     state: present
     reload: yes
     sysctl_file: /etc/sysctl.d/k8s.conf
-  become: true
-
-- name: Update net.bridge.bridge-nf-call-ip6tables
-  sysctl:
-    name: net.bridge.bridge-nf-call-ip6tables
-    value: '1'
-    state: present
-    reload: yes
-    sysctl_file: /etc/sysctl.d/k8s.conf
-  become: true
-
-- name: Update net.ipv4.ip_forward
-  sysctl:
-    name: net.ipv4.ip_forward
-    value: '1'
-    state: present
-    reload: yes
-    sysctl_file: /etc/sysctl.d/k8s.conf
+  loop:
+    - net.bridge.bridge-nf-call-iptables
+    - net.bridge.bridge-nf-call-ip6tables
+    - net.ipv4.ip_forward
   become: true
 
 #

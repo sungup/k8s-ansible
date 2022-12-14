@@ -1,0 +1,31 @@
+- name: Create new token
+  command: "kubeadm token create"
+  register: k8s_token
+  changed_when: false
+
+- name: Create new sha256 hash
+  shell: |-
+    /usr/bin/openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt |
+    /usr/bin/openssl rsa -pubin -outform der 2> /dev/null |
+    /usr/bin/openssl dgst -sha256 -hex |
+    /usr/bin/sed 's/^.*= //'
+  ignore_errors: true
+  changed_when: false
+  register: k8s_hash
+
+- name: Find registered nodes from kubectl
+  shell: "kubectl get nodes --no-headers | awk '{ print $1 }'"
+  ignore_errors: yes
+  changed_when: false
+  register: k8s_hosts
+
+- name: Delegate join variables to connect master
+  set_fact:
+    connection: "{{ item }}"
+    join_token: "{{ k8s_token.stdout }}"
+    join_hash: "{{ k8s_hash.stdout }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  when: item not in k8s_hosts.stdout.split('\n')
+  with_items: "{{ hostvars }}"
+  run_once: true

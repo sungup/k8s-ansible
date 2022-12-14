@@ -1,1 +1,9 @@
-kubernetes_ver: 1.26.0
+kubeadm_user: "{{ ansible_user | default(lookup('env', 'USER'), true) }}"
+
+calico_repo: "https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_ver }}/manifests"
+calico_operator_url: "{{ calico_repo }}/tigera-operator.yaml"
+calico_resource_url: "{{ calico_repo }}/custom-resources.yaml"
+
+calico_cidr_regex: '^(\s+)cidr: [1-9][0-9./]+$'
+calico_cidr_replace: '\1cidr: {{ pod_network_cidr }}'
+calico_resource_content: "{{ lookup('url', calico_resource_url, split_lines = false) | regex_replace(calico_cidr_regex, calico_cidr_replace, multiline = true) }}"

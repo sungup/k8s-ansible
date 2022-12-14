@@ -1,0 +1,76 @@
+- name: Copy kubeadm init configuration
+  template:
+    src: templates/kubeadm-config.yaml
+    dest: "/tmp/kubeadm-config.yaml"
+
+- name: Run kubeadm init
+  command: "/usr/bin/kubeadm init --config /tmp/kubeadm-config.yaml"
+  register: kubeadm_init
+  become: true
+
+# update kubeconfig environment for root user
+- name: Insert KUBECONFIG environment for the .bash_profile
+  lineinfile:
+    path: /root/.bash_profile
+    line: 'export KUBECONFIG=/etc/kubernetes/admin.conf'
+  when:
+    - kubeadm_init is not failed
+    - kubeadm_user == "root"
+
+- name: Insert kuernetes environments for the .bashrc
+  lineinfile:
+    path: /root/.bashrc
+    line: |
+      export KUBECONFIG=/etc/kubernetes/admin.conf
+      source /usr/share/bash-completion/bash_completion
+      source <(kubectl completion bash)
+      alias k=kubectl
+      complete -F __start_kubectl k
+  when:
+    - kubeadm_init is not failed
+    - kubeadm_user == "root"
+
+# update kubeconfig environment for the not root user
+- name: Make .kube directory
+  file:
+    path: "{{ lookup('env', 'HOME') }}/.kube"
+    owner: "{{ kubeadm_user }}"
+    group: "{{ kubeadm_user }}"
+    state: directory
+  when:
+    - kubeadm_init is not failed
+    - kubeadm_user != "root"
+
+- name: copy admin.conf to .kube
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ lookup('env', 'HOME') }}/.kube/config"
+    owner: "{{ kubeadm_user }}"
+    group: "{{ kubeadm_user }}"
+    remote_src: true
+  when:
+    - kubeadm_init is not failed
+    - kubeadm_user != "root"
+  become: true
+
+# install calico cni
+- name: Install calico operator
+  command: "kubectl create -f {{ calico_operator_url }}"
+
+- name: Generate calico resource configuration
+  copy:
+    content: "{{ calico_resource_content }}"
+    dest: /tmp/calico_resource.yaml
+
+- name: Create calico resource
+  command: "kubectl create -f /tmp/calico_resource.yaml"
+
+- name: Untaint master and controlplain
+  command: "kubectl taint nodes --all {{ item }}-"
+  loop:
+    - "node-role.kubernetes.io/control-plane"
+    - "node-role.kubernetes.io/master"
+  ignore_errors: true
+  failed_when: false
+  changed_when: false
+
