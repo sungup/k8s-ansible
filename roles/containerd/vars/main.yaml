@@ -1,5 +1,3 @@
-containerd_ver: "1.6.12"
-containerd_arch: "arm64"
-containerd_repo: "https://github.com/containerd/containerd/releases/download"
+containerd_arch: "{{ system_arch }}"
 containerd_file: "containerd-{{ containerd_ver }}-linux-{{ containerd_arch }}.tar.gz"
 containerd_url: "{{ containerd_repo }}/v{{ containerd_ver }}/{{ containerd_file }}"

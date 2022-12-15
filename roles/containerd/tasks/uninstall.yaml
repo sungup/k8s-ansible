@@ -1,0 +1,50 @@
+---
+
+- name: Stop and disable containerd.service
+  service:
+    name: containerd
+    state: stopped
+    enabled: false
+  become: true
+  ignore_errors: true
+
+- name: Remove containerd related files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/containerd
+    - /usr/local/lib/systemd/system/containerd.service
+    - /usr/local/bin/containerd
+    - /usr/local/bin/containerd-shim
+    - /usr/local/bin/containerd-shim-runc-v1
+    - /usr/local/bin/containerd-shim-runc-v2
+    - /usr/local/bin/containerd-stress
+    - /usr/local/bin/ctr
+    - /opt/containerd
+    - /run/containerd
+  become: true
+
+- name: Find all files in /var/lib/containerd
+  find:
+    paths: /var/lib/containerd
+    hidden: true
+    recurse: false
+    file_type: any
+    excludes: "lost+found"
+  become: true
+  register: containerd_files
+  ignore_errors: true
+
+- name: Remove all files in /var/lib/containerd
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ containerd_files.files }}"
+  become: true
+
+- name: Issue daemon-reload
+  service:
+    daemon_reload: true
+  become: true
+

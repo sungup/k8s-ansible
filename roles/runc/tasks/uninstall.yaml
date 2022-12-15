@@ -1,0 +1,7 @@
+---
+
+- name: Remove runc
+  file:
+    path: /usr/local/sbin/runc
+    state: absent
+  become: true

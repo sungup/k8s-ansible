@@ -1,0 +1,7 @@
+---
+
+- name: Remove cni plugins
+  file:
+    path: /opt/cni/bin
+    state: absent
+  become: true

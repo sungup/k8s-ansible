@@ -4,3 +4,15 @@
     - include_role:
         name: kubernetes
         tasks_from: uninstall
+
+    - include_role:
+        name: containerd
+        tasks_from: uninstall
+
+    - include_role:
+        name: cni
+        tasks_from: uninstall
+
+    - include_role:
+        name: runc
+        tasks_from: uninstall
