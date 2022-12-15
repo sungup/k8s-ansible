@@ -23,6 +23,7 @@
   copy:
     src: files/containerd.service
     dest: /usr/local/lib/systemd/system/containerd.service
+  notify: restart containerd
   become: true
 
 - name: Reload containerd.service
@@ -47,6 +48,7 @@
   copy:
     content: "{{ containerd_conf.stdout | replace('SystemdCgroup = false', 'SystemdCgroup = true') | replace('registry.k8s.io/pause:3.6', 'registry.k8s.io/pause:3.2') }}"
     dest: /etc/containerd/config.toml
+  notify: restart containerd
   become: true
 
 - name: Enable containerd.service
