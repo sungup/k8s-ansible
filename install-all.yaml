@@ -1,0 +1,5 @@
+# All-in-one installer
+
+- import_playbook: 01_system_update.yaml
+- import_playbook: 02_containerd_install.yaml
+- import_playbook: 03_kubernetes_install.yaml

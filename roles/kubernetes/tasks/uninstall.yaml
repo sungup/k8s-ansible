@@ -55,6 +55,7 @@
   shell: "ctr -n k8s.io containers ls -q"
   register: containers
   ignore_errors: true
+  changed_when: false
   become: true
 
 - name: Remove containers
@@ -66,6 +67,7 @@
   shell: "ctr -n k8s.io images ls -q"
   register: images
   ignore_errors: true
+  changed_when: false
   become: true
 
 - name: Remove images
@@ -77,6 +79,7 @@
   shell: "ctr -n k8s.io snapshots ls | awk '! /KEY/ { print $1 }'"
   register: snapshots
   ignore_errors: true
+  changed_when: false
   become: true
 
 - name: Remove all snapshots
@@ -87,6 +90,7 @@
 - name: Remove containerd namespace
   shell: "ctr namespace rm k8s.io"
   ignore_errors: true
+  changed_when: false
   become: true
 
 #
