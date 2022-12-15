@@ -18,3 +18,4 @@
     src: "/tmp/{{ cni_file }}"
     dest: "/opt/cni/bin"
   become: true
+  notify: "restart contaienrd"

@@ -18,6 +18,7 @@
 - name: Install runc
   command: "/usr/bin/install -m 755 /tmp/{{ runc_file }} /usr/local/sbin/runc"
   become: true
+  notify: "restart containerd"
   when:
     - check_runc_file is changed
 
