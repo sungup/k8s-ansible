@@ -1,4 +1,20 @@
 ---
+- name: Copy the maintenance.sh to each hosts
+  copy:
+    src: files/maintenance.sh
+    dest: "/usr/local/bin/maintenance.sh"
+    mode: "0644"
+    owner: root
+    group: root
+  become: true
+
+- name: Register cron job
+  cron:
+    name: "system maintenance"
+    minute: "0"
+    job: "/usr/local/bin/maintenance.sh > /dev/null"
+    state: present
+  become: true
 
 - name: Update apt-get repo and cache
   apt:
@@ -11,6 +27,11 @@
     upgrade: dist
     force_apt_get: True
   register: apt_result
+
+- name: Install linux-modules-extra-raspi
+  apt:
+    pkg: linux-modules-extra-raspi
+    state: present
 
 - name: Remove useless packages
   apt:
