@@ -7,3 +7,9 @@ calico_resource_url: "{{ calico_repo }}/custom-resources.yaml"
 calico_cidr_regex: '^(\s+)cidr: [1-9][0-9./]+$'
 calico_cidr_replace: '\1cidr: {{ pod_network_cidr }}'
 calico_resource_content: "{{ lookup('url', calico_resource_url, split_lines = false) | regex_replace(calico_cidr_regex, calico_cidr_replace, multiline = true) }}"
+
+ingress_controller_url: "{{ ingress_repo }}/controller-v{{ ingress_ver }}/deploy/static/provider/cloud/deploy.yaml"
+
+metallb_manifest_url: "{{ metallb_repo }}/v{{ metallb_ver }}/config/manifests/metallb-{{ metallb_type }}.yaml"
+metallb_address_pool_name: "sungup-pool"
+metallb_address_pool_range: "10.0.1.61-10.0.1.80"

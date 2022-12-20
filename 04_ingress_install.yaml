@@ -1,0 +1,9 @@
+- hosts: masters
+  gather_facts: false
+  tasks:
+    - include_role:
+        name: kubernetes
+        tasks_from: init_ingress
+    - include_role:
+        name: kubernetes
+        tasks_from: init_metallb

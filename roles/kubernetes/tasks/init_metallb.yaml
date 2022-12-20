@@ -1,0 +1,20 @@
+- name: Get kube-proxy configmap
+  command: "kubectl get configmap kube-proxy -n kube-system -o yaml"
+  register: kube_proxy_configmap
+  changed_when: false
+
+- name: Enabling strictARP
+  command: 
+    cmd: "kubectl apply -f - -n kube-system"
+    stdin: "{{ kube_proxy_configmap.stdout | replace('strictARP: false', 'strictARP: true') }}"
+
+- name: Installing metallb by manifest
+  command: "kubectl apply -f {{ metallb_manifest_url }}"
+
+- name: Generating metallb service IPs configuration
+  template:
+    src: templates/metallb-addresspool.yaml.j2
+    dest: "/tmp/metallb-addresspool.yaml"
+
+- name: Advertise metallb service IPs
+  command: "kubectl apply -f /tmp/metallb-addresspool.yaml"
