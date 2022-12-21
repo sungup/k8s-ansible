@@ -1,0 +1,39 @@
+- name: Installing nginx server
+  apt:
+    pkg: nginx
+  become: true
+
+- name: Enabling and restart nginx server
+  service:
+    name: nginx
+    enabled: true
+    state: started
+  become: true
+  ignore_errors: true
+
+- name: Creating location directory
+  file:
+    path: /etc/nginx/location-enabled
+    state: directory
+  become: true
+
+- name: Adding location configs in default
+  lineinfile:
+    path: /etc/nginx/sites-enabled/default
+    insertafter: "^([ \t]+)server_name.*;"
+    line: "\tinclude /etc/nginx/location-enabled/*;"
+  notify: restart nginx
+  become: true
+
+
+- name: Adding reverse proxy setting
+  vars:
+    location: "{{ item.location }}"
+    proxy_pass: "{{ item.proxy_pass }}"
+  template:
+    src: "templates/reverse_proxy.j2"
+    dest: "/etc/nginx/location-enabled/{{ location | replace('/', '_') }}"
+  notify: restart nginx
+  with_items: "{{ nginx_reverse_proxy }}"
+  become: true
+

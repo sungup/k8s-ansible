@@ -4,3 +4,10 @@
     state: restarted
   become: true
   listen: "restart contaienrd"
+
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
+  become: true
+  listen: "restart nginx"
